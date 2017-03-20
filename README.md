@@ -9,12 +9,15 @@ https://github.com/emily-macon/MobileComputingLab4Android-REST
 
 # How to run node <-> mbed 
 #1 Download mqtt_node.zip from class & run "npm install --save" followed by "npm start" wait until mongo download finishes before moving on
+
 #2 Replace index.pug contents with contents of index.pug from repo
+
 #3 Replace server.js
 
 "npm start" in terminal to run standalone web app
 
 -- to run with mbed do the following (steps #2-3 not necessary):
+
 #4 Download K64F-RTOS-MQTT-Example by Mike Baylis by searching for programs in mbed compiler or use this link
 https://developer.mbed.org/users/msbaylis/code/K64F-RTOS-MQTT-Example/
 
