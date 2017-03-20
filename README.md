@@ -59,6 +59,8 @@ The debug log on the web app should display "New client connected:" and "Client 
 
 #4 Now in mongo shell run "db.areas.insert({_id: "YOUR_FRDM_MAC_ADDRESS", name: "area1", location: "Study Abroad Office (Hub)"})" replacing YOUR_FRDM_MAC_ADDRESS with your frdm MAC ADDRESS (keep quotes, it's a string)
 
+- After these 4 steps are complete pressing sw2 on the mbed board will increment the population of area1 in the mongo database. See the difference in population by running "db.areas.findOne({name: "area1"}).population" in the mongo shell before and after sw2 button press(es).
+
 /* Server.js
  * The main portion of this project. Contains all the defined routes for express,
  * rules for the websockets, and rules for the MQTT broker.
