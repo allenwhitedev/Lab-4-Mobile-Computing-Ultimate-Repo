@@ -53,7 +53,7 @@ The debug log on the web app should display "New client connected:" and "Client 
 
 #1 Run node server with mbed board by following guide "How to run node <-> mbed" above, but first complete steps #2-4
 
-#2 Replace my the mongoUrl to use your ip address (HOST from config.js)
+#2 Replace your server.js contents with server.js from below. I suggest clicking the RAW format for this readme on github before copy/paste! Replace the mongoUrl to use your ip address (HOST from config.js)
 
 #3 Run "mongo 'mongourl'" where 'mongoUrl' is your mongoUrl (do not use quotes)
 
