@@ -1,0 +1,90 @@
+//-
+    Index.pug
+    This is the home page for this project. It is configured to auto-connect
+    to the server's websocket and handle any events fired from the server end.
+//-
+extends base
+//- The visual portion of the page
+block content
+    div(class='panel panel-default')
+        div.panel-body
+            h1 MQTT Tracker
+            p Simple Website for tracking population 'heat maps' using MQTT
+            // Implement the graphics portion in the canvas supplied below
+            div.well
+                canvas(id='grid' style="background: url('./img/campus.png')")
+    
+    div(class='panel')
+        div.panel-body
+            button(class='btn btn-primary', type='button', data-toggle='collapse', data-target='#debugLog', aria-expanded='false', aria-controls='debugLog') Show Debug Log
+            div(id='debugLog', class='collapse')
+                div(id='debugLogList', class='well')
+    div(class='center sBContainer centerText')
+        button(class='btn btn-primary sB btn-lg' id='sB1') ADD USER
+        button(class='btn btn-success sB btn-lg' id='sB2') ADD USER
+        button(class='btn btn-warning sB btn-lg' id='sB3') ADD USER
+        button(class='btn btn-danger sB btn-lg' id='sB4') ADD USER
+//- The scripts needed by this page
+block scripts
+    script(type='text/javascript').
+        $(() => {
+            var socket = io();
+            // Handle socket events here
+            //--------------------------
+            // Adds to the debug list
+            socket.on('debug', data => {
+                var time = new Date();
+                $('#debugLogList').append('<div>' + time + ': ' + data.type + ' | ' + data.msg + '</div>');
+            });
+            //--------------------------
+            socket.on('test connection', data => 
+            {
+                console.log('test connection from server:', data)
+            })
+        });
+    
+    script(type='text/javascript').
+        $(() => {
+            function getHeatmapColor(val)
+            {
+                let hmC = (1.0 - val) * 240
+                return "hsl(" + hmC + ", 100%, 50%)"
+            }
+            // Handle any canvas code here
+            //----------------------------
+            var canv = $('#grid');
+            //----------------------------
+            
+            // Draw areas on canvas map
+            var canvas = document.getElementById("grid")
+            var ctx = canvas.getContext('2d')
+            
+            ctx.beginPath()
+            // x pos, y pos, radius, start angle, end angle
+            ctx.arc(40, 45, 10,0, 2*Math.PI)
+            ctx.stroke()
+            
+            ctx.beginPath()
+            ctx.arc(100, 50, 10,0, 2*Math.PI)
+            ctx.stroke()
+            
+            ctx.beginPath()
+            ctx.arc(190, 40, 10,0, 2*Math.PI)
+            ctx.stroke()
+            
+            ctx.beginPath()
+            ctx.arc(220, 95, 10,0, 2*Math.PI)
+            ctx.fillStyle = getHeatmapColor(.3)
+            ctx.fill()
+            ctx.stroke()
+
+            localStorage.setItem('sB1', 0)
+            localStorage.setItem('sB2', 0)
+            localStorage.setItem('sB3', 0)
+            localStorage.setItem('sB4', 0)
+            $('.sB').click((e) =>
+            {
+                console.log(e.target.id)
+                
+            })
+        });
