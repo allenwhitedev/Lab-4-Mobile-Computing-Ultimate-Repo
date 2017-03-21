@@ -15,7 +15,7 @@ var internals = require(path.join(__dirname, 'internals'));
 MongoClient = require('mongodb').MongoClient
 setTimeout(() =>
 {
-	let mongoUrl = 'mongodb://192.xxx.x.xxx:27017/mqtt'
+	let mongoUrl = 'mongodb://192.168.1.140:27017/mqtt'
 	MongoClient.connect(mongoUrl, (err, db) => 
 	{
 		if (err)
@@ -41,6 +41,35 @@ setupSocket();
 function socket_handler(socket, mqtt) {
 	// Called when a client connects
 	mqtt.on('clientConnected', client => {
+
+
+		// called repeatedly to check if population threshold is exceeded every 10s
+		setInterval(() =>
+		{
+			globalDB.collection('areas').findOne({_id: client.id}, (err, doc) =>
+			{
+				if (err)
+					return console.log(err)
+								
+				let thresholdBroken = "false"
+				if (doc.population > 10)
+					thresholdBroken = "true"
+
+				let message = 
+				{
+						topic: "isThresholdExceeded",
+						payload: thresholdBroken,
+						qos: 0, 
+						retain: false 
+				}	
+
+				mqtt.publish(message, () => 
+				{
+					console.log('attempt of publication isThresholdExceeded')
+				})
+
+			})
+		}, 10000)
 
 
 		socket.emit('debug', {
@@ -72,9 +101,42 @@ function socket_handler(socket, mqtt) {
 			{$inc: {population: changeInPopulation} }, (err, result) =>
 		{
 			if (err)
-				return err
+				return console.log(err)
 			console.log(data.topic + " population in", client.id)
+
+			// right after update check if threshold has been exceeded
+			globalDB.collection('areas').findOne({_id: client.id}, (err, result) =>
+			{
+				if (err)
+					return console.log(err)
+
+				console.log('population:', result.population)
+				if (result.population > 10)
+				{
+					console.log('population exceeded threshold of 10, turn on led')
+
+					if (result.population > 10)
+						isThresholdBroken = "true"
+					else
+						isThresholdBroken = "false"
+
+					let message = 
+					{
+ 						topic: "isThresholdExceeded",
+ 						payload: isThresholdBroken,
+ 						qos: 0, 
+ 						retain: false 
+					}	
+
+					mqtt.publish(message, () => 
+					{
+						console.log('attempt of publication isThresholdExceeded')
+					})
+				}
+			})
 		})
+
+
 
 		socket.emit('debug', {
 			type: 'PUBLISH', 
@@ -120,6 +182,40 @@ function setupExpress() {
 		res.render('index', {title: 'MQTT Tracker'});
 	});
 
+	app.get('/test', (req, res) =>
+	{
+		console.log('test REST route')
+		res.send("Test was successful!")
+	})
+
+	// ----------------------- ANDROID REST API 
+	// android increments population of an area
+	app.post('/inc/:areaId', (req, res) =>
+	{
+		let areaId = req.params.areaId
+		globalDB.collection('areas').update({_id: req.params.areaId}, 
+			{$inc: {population: 1} }, (err, result) =>
+		{
+			if (err)
+				console.log(err)
+			res.status(200).send(result)
+		})
+	})
+
+	// android decrements population of an area
+	app.post('/dec/:areaId', (req, res) =>
+	{
+		let areaId = req.params.areaId
+		globalDB.collection('areas').update({_id: req.params.areaId}, 
+			{$inc: {population: -1} }, (err, result) =>
+		{
+			if (err)
+				console.log(err)
+			res.status(200).send(result)
+		})
+	})
+	// ----------------------- end Android REST API
+
 	// Basic 404 Page
 	app.use((req, res, next) => {
 		var err = {
@@ -163,3 +259,8 @@ function setupSocket() {
 		console.log("Listening on: " + conf.HOST + ":" + conf.PORT);
 	});
 }
+
+
+
+
+
